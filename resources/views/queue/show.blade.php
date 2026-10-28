@@ -1,0 +1,22 @@
+@extends('layouts.app')
+@section('title', 'Tiket '.$ticket->display_number)
+@section('content')
+<div class="mx-auto max-w-3xl px-5 py-12 lg:px-8"><a href="{{ route('home') }}" class="text-sm font-semibold text-leaf">← Kembali ke beranda</a><div class="mt-6 overflow-hidden rounded-[2rem] border border-ink/10 bg-white shadow-sm">
+<div class="bg-leaf px-6 py-8 text-center text-white sm:px-10"><div class="text-sm font-semibold uppercase tracking-[.2em] text-white/65">Nomor antrean Anda</div><div class="mt-3 text-7xl font-semibold tracking-tight">{{ $ticket->display_number }}</div><div id="ticket-status" class="mt-4 inline-flex rounded-full bg-white/15 px-4 py-1.5 text-sm font-semibold">{{ ['waiting'=>'Menunggu','called'=>'Dipanggil','serving'=>'Sedang dilayani','completed'=>'Selesai','skipped'=>'Terlewat'][$ticket->status] }}</div></div>
+<div class="p-6 sm:p-10"><div class="grid grid-cols-2 gap-4"><div class="rounded-2xl bg-cream p-4"><div class="text-xs text-ink/55">Posisi antrean</div><div class="mt-1 text-3xl font-semibold"><span id="position">{{ $position ?: '—' }}</span></div></div><div class="rounded-2xl bg-cream p-4"><div class="text-xs text-ink/55">Sisa sebelum Anda</div><div class="mt-1 text-3xl font-semibold"><span id="remaining">{{ $ticket->status === 'waiting' ? $remaining : '—' }}</span></div></div></div>
+<div class="mt-4 rounded-2xl border border-leaf/15 bg-mint/55 p-5"><div class="text-xs font-bold uppercase tracking-widest text-leaf">Perkiraan dipanggil</div><div id="estimate" class="mt-1 text-2xl font-semibold">{{ $estimate?->format('H:i') ?? 'Menunggu panggilan petugas' }}{{ $estimate ? ' WIB' : '' }}</div></div>
+<section id="report-preview" class="mt-7 {{ $ticket->status === 'completed' ? '' : 'hidden' }} rounded-2xl border border-blue-100 bg-white p-5 shadow-sm sm:p-6">
+<div class="flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-lg font-semibold text-slate-900">Laporan layanan</h2><p class="mt-1 text-sm text-slate-500">Pratinjau dokumen layanan yang telah selesai.</p></div><a href="{{ route('queue.report', [$ticket->tracking_token, 'download' => 1]) }}" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">Unduh PDF</a></div>
+<div class="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-slate-100"><iframe id="report-frame" title="Pratinjau laporan layanan PDF" class="h-[32rem] w-full sm:h-[42rem]" @if($ticket->status === 'completed') src="{{ route('queue.report', $ticket->tracking_token) }}" @else data-src="{{ route('queue.report', $ticket->tracking_token) }}" @endif></iframe></div>
+</section>
+<dl class="mt-7 grid gap-4 text-sm sm:grid-cols-2"><div><dt class="text-ink/50">Nama</dt><dd class="mt-1 font-semibold">{{ $ticket->name }}</dd></div><div><dt class="text-ink/50">Keperluan</dt><dd class="mt-1 font-semibold">{{ $ticket->service_type }}</dd></div><div><dt class="text-ink/50">Lokasi layanan</dt><dd class="mt-1 font-semibold">{{ $ticket->schedule->location }}</dd></div><div><dt class="text-ink/50">Tanggal</dt><dd class="mt-1 font-semibold">{{ $ticket->schedule->service_date->translatedFormat('d F Y') }}</dd></div></dl>
+<p class="mt-8 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">Pantau halaman ini. Datang ke lokasi saat nomor Anda mendekati giliran dan tunjukkan tiket kepada petugas.</p></div></div></div>
+@endsection
+@push('scripts')
+<script>
+const statusUrl = @json(route('queue.status', $ticket->tracking_token));
+const labels = {waiting:'Menunggu',called:'Dipanggil',serving:'Sedang dilayani',completed:'Selesai',skipped:'Terlewat'};
+async function refreshTicket(){try{const response=await fetch(statusUrl,{headers:{Accept:'application/json'}});const data=await response.json();document.getElementById('ticket-status').textContent=labels[data.status]||data.status;document.getElementById('position').textContent=data.position||'—';document.getElementById('remaining').textContent=data.status==='waiting'?data.remaining:'—';document.getElementById('estimate').textContent=data.estimate?data.estimate+' WIB':(data.status==='completed'?'Layanan selesai':(data.status==='skipped'?'Antrean terlewat':'Menunggu panggilan petugas'));if(data.status==='completed'){document.getElementById('report-preview').classList.remove('hidden');const reportFrame=document.getElementById('report-frame');if(!reportFrame.hasAttribute('src')){reportFrame.src=reportFrame.dataset.src;}}}catch(error){}}
+setInterval(refreshTicket,15000);
+</script>
+@endpush

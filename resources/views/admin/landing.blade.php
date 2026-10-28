@@ -1,0 +1,19 @@
+@extends('layouts.app')
+@section('title', 'Informasi Landing Page')
+@section('content')
+<div class="mx-auto max-w-5xl px-5 py-9 lg:px-8"><p class="text-sm font-bold uppercase tracking-widest text-blue-600">Konten halaman depan</p><h1 class="mt-2 text-3xl font-semibold tracking-tight">Informasi Samsat Keliling</h1><p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Ubah judul dan keterangan yang tampil pada empat kartu informasi di halaman landing.</p>
+<div class="mt-7 space-y-6">
+@forelse($sections as $section)
+<form method="post" action="{{ route('admin.landing.update',$section) }}" class="space-y-5 rounded-3xl border border-blue-100 bg-white p-6 shadow-sm sm:p-8">@csrf @method('PUT')
+@if($errors->any())<div class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800">{{ $errors->first() }}</div>@endif
+<div class="flex items-center justify-between gap-4 border-b border-slate-100 pb-4"><h2 class="text-lg font-semibold">{{ $section->title }}</h2><label class="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="is_active" value="1" @checked($section->is_active) class="size-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"> Tampilkan</label></div>
+<div class="grid gap-5 sm:grid-cols-[100px_1fr]"><label class="block"><span class="text-sm font-semibold">Ikon</span><input name="icon" value="{{ old('icon',$section->icon) }}" required maxlength="16" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"></label><label class="block"><span class="text-sm font-semibold">Judul kartu</span><input name="title" value="{{ old('title',$section->title) }}" required maxlength="180" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"></label></div>
+<label class="block"><span class="text-sm font-semibold">Deskripsi</span><textarea name="description" rows="4" maxlength="10000" placeholder="Pisahkan paragraf dengan satu baris kosong." class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">{{ old('description',$section->description) }}</textarea></label>
+<div class="grid gap-5 sm:grid-cols-2"><label class="block"><span class="text-sm font-semibold">Subjudul</span><input name="subheading" value="{{ old('subheading',$section->subheading) }}" maxlength="180" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"></label><label class="block"><span class="text-sm font-semibold">Judul daftar butir</span><input name="items_title" value="{{ old('items_title',$section->items_title) }}" maxlength="180" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"></label></div>
+<label class="block"><span class="text-sm font-semibold">Isi subjudul</span><textarea name="subheading_text" rows="2" maxlength="5000" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">{{ old('subheading_text',$section->subheading_text) }}</textarea></label>
+<label class="block"><span class="text-sm font-semibold">Daftar butir</span><textarea name="items" rows="5" maxlength="10000" placeholder="Tulis satu butir per baris." class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">{{ old('items',implode("\n",$section->items ?? [])) }}</textarea><span class="mt-1 block text-xs text-slate-500">Gunakan satu baris untuk setiap butir.</span></label>
+<div class="flex justify-end"><button class="rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700">Simpan kartu</button></div>
+</form>
+@empty<div class="rounded-3xl border border-dashed border-blue-200 bg-white p-8 text-center text-slate-600">Belum ada konten. Jalankan <code>php artisan db:seed --class=LandingSectionSeeder</code> untuk memuat contoh informasi.</div>@endforelse
+</div></div>
+@endsection

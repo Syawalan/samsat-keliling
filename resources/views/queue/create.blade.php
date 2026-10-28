@@ -1,0 +1,14 @@
+@extends('layouts.app')
+@section('title', 'Ambil Nomor Antrean')
+@section('content')
+<div class="mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-[.85fr_1.15fr] lg:px-8"><div><p class="text-sm font-bold uppercase tracking-widest text-leaf">Antrean online</p><h1 class="mt-3 text-4xl font-semibold tracking-tight">Ambil nomor, datang sesuai giliran.</h1><p class="mt-4 leading-7 text-ink/60">Tidak perlu membuat akun. Tiket antrean bisa dibuka kembali melalui tautan tiket.</p>
+@if($schedule)<div class="mt-8 rounded-2xl bg-mint/70 p-5"><div class="text-xs font-bold uppercase tracking-widest text-leaf">Layanan hari ini</div><div class="mt-2 font-semibold">{{ $schedule->location }}</div><div class="mt-1 text-sm text-ink/60">{{ substr((string)$schedule->starts_at, 0, 5) }}–{{ substr((string)$schedule->ends_at, 0, 5) }} WIB · Kuota {{ $schedule->quota }}</div></div>@endif</div>
+<form method="post" action="{{ route('queue.store') }}" class="rounded-3xl border border-ink/10 bg-white p-6 shadow-sm sm:p-8">@csrf
+@if($errors->any())<div class="mb-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
+@if(!$schedule)<div class="mb-5 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">Jadwal hari ini belum tersedia. Antrean belum dapat diambil.</div>@endif
+<div class="space-y-5"><label class="block"><span class="text-sm font-semibold">Nama lengkap</span><input name="name" value="{{ old('name') }}" required maxlength="120" autocomplete="name" class="mt-2 w-full rounded-xl border border-ink/15 bg-cream/60 px-4 py-3 outline-none focus:border-leaf focus:ring-2 focus:ring-leaf/15"></label>
+<label class="block"><span class="text-sm font-semibold">Nomor ponsel</span><input name="phone" value="{{ old('phone') }}" required maxlength="30" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" class="mt-2 w-full rounded-xl border border-ink/15 bg-cream/60 px-4 py-3 outline-none focus:border-leaf focus:ring-2 focus:ring-leaf/15"></label>
+<label class="block"><span class="text-sm font-semibold">Keperluan layanan</span><select name="service_type" required class="mt-2 w-full rounded-xl border border-ink/15 bg-cream/60 px-4 py-3 outline-none focus:border-leaf focus:ring-2 focus:ring-leaf/15"><option value="">Pilih keperluan</option>@foreach(['Pajak tahunan','Perpanjangan STNK lima tahunan','Balik nama kendaraan','Konsultasi lainnya'] as $service)<option @selected(old('service_type') === $service)>{{ $service }}</option>@endforeach</select></label>
+<button @disabled(!$schedule) class="w-full rounded-full bg-leaf px-5 py-3.5 font-semibold text-white hover:bg-ink disabled:cursor-not-allowed disabled:opacity-40">Buat tiket antrean</button><p class="text-center text-xs leading-5 text-ink/50">Estimasi tunggu dibatasi maksimal 35 menit. Simpan tautan tiket Anda untuk memantau antrean.</p></div>
+</form></div>
+@endsection
